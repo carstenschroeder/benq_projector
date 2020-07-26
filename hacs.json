@@ -1,0 +1,6 @@
+{
+  "name": "My awesome thing",
+  "render_readme": true,
+  "domains": ["switch"],
+  "iot_class": ["Local Polling"]
+}
