@@ -4,7 +4,7 @@ import threading
 
 import voluptuous as vol
 
-from homeassistant.components.switch import (SwitchDevice, PLATFORM_SCHEMA)
+from homeassistant.components.switch import (SwitchEntity, PLATFORM_SCHEMA)
 from homeassistant.const import (
     STATE_ON, STATE_OFF, CONF_NAME, CONF_HOST)
 import homeassistant.helpers.config_validation as cv
@@ -59,7 +59,7 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
     add_entities([BenqSwitch(telnet, host, name)], True)
 
 
-class BenqSwitch(SwitchDevice):
+class BenqSwitch(SwitchEntity):
     """Representation of a Benq Projector as a switch."""
 
     def __init__(self, telnet, host, name, **kwargs):
