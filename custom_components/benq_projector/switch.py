@@ -80,32 +80,38 @@ class BenqSwitch(SwitchEntity):
             MODEL: None
         }
 
+    def _handshake(self):
+        """Initialize communication with projector."""
+        self.telnet.write(b'\r')
+        answer = self.telnet.read_until(b">", timeout=1)
+        return answer == b'>'
+
     def _write_read(self, msg):
         """Write to the projector and read the return."""
+        for _ in range(1, 5):
+            ready = self._handshake()
+            if ready:
+                break
 
-        msg = msg.encode('utf-8')
-        cmd = b'\r'+msg+b'\r'
-        self.telnet.write(cmd)
-        _LOGGER.debug("Command send: %s", cmd)
+        if ready:
+            msg = msg.encode('utf-8')
+            self.telnet.write(msg)
 
-        expect = b'>'+msg+b'\r\r\n'
-        _LOGGER.debug("Echo expected: %s", expect)
+            expect = msg+b'\r\n'
 
-        echo = self.telnet.read_until(expect, timeout=1)
-        _LOGGER.debug("Echo received: %s", echo)
-
-        if echo == expect:
-            answ = self.telnet.read_until(b'#', timeout=1)
-            dummy = self.telnet.read_until(b'\r\n', timeout=1)
-            _LOGGER.debug("Answer received: %s", answ)
-            return answ.decode('utf-8')
+            if self.telnet.read_until(expect, timeout=1) == expect:
+                return self.telnet.read_until(b"#", timeout=1).decode('utf-8')
 
         return None
 
     def _write_read_format(self, msg):
         """Write msg, obtain answer and format output."""
-        awns = self._write_read(msg)
+        cmd = msg + '\r'
 
+        _LOGGER.debug("Command send: %s", cmd)
+        awns = self._write_read(cmd)
+
+        _LOGGER.debug("Answer received: %s", awns)
 
         return awns
 
@@ -169,7 +175,7 @@ class BenqSwitch(SwitchEntity):
 
             self._update_state(awns)
 
-            if self._state and self._available and not self._block:
+            if self._state and not self._block:
                 for key in self._attributes:
                     msg = CMD_DICT.get(key, None)
                     if msg:
