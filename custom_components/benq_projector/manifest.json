@@ -1,5 +1,6 @@
 {
   "domain": "benq_projector",
+  "version": "0.2.0",
   "name": "Benq Projector",
   "documentation": "",
   "dependencies": [],
